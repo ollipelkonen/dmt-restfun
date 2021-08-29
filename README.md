@@ -7,6 +7,7 @@ this application uses <b>go-kit</b>
 go get github.com/go-kit/kit
 go get github.com/go-kit/kit/endpoint
 go get github.com/go-kit/kit/log@v0.11.0
+go get github.com/go-sql-driver/mysql
 
 -- 2
 

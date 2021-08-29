@@ -4,15 +4,19 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/ollipelkonen/dmt-restfun/services"
+	"github.com/ollipelkonen/dmt-restfun/repositories"
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
 
 func main() {
-	fmt.Println("test")
 	svc := services.TodoServiceImpl{}
-	//services.Service()
 
+	fmt.Println("database connection")
+	rep := repositories.CreateRepository("restfun:restfun@/restfun")
+	rep.GetAll()
+
+	fmt.Println("server")
 	funcHandler := httptransport.NewServer(
 		services.MakeFunc1Endpoint(svc),
 		services.DecodeFunc1Request,
