@@ -1,0 +1,11 @@
+{
+  "token": "EE9AB65F552B2FCE98BB69B79C9B4",
+  "port": "8080",
+  "database": {
+      "host": "localhost",
+      "port": "3306",
+      "database": "restfun",
+      "username": "restfun",
+      "password": "restfun"
+  }
+}
