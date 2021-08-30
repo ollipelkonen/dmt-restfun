@@ -8,7 +8,8 @@ go get github.com/go-kit/kit
 go get github.com/go-kit/kit/endpoint
 go get github.com/go-kit/kit/log@v0.11.0
 go get github.com/go-sql-driver/mysql
-go get  "github.com/jmoiron/sqlx"
+go get "github.com/jmoiron/sqlx"
+go get "github.com/gorilla/mux"
 
 
 -- 2

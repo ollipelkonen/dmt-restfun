@@ -7,6 +7,7 @@ import (
 
 	"net/http"
 
+	"github.com/ollipelkonen/dmt-restfun/repositories"
 	"github.com/go-kit/kit/endpoint"
 
 )
@@ -18,7 +19,9 @@ type TodoService interface {
 }
 
 
-type TodoServiceImpl struct{}
+type TodoServiceImpl struct{
+	todoRepository repositories.TodoRepositoryImpl
+}
 
 func (TodoServiceImpl) Func1(s string) (string, error) {
 	return "_" + s + "_", nil
@@ -43,10 +46,11 @@ type Func1Response struct {
 
 func DecodeFunc1Request(_ context.Context, r *http.Request) (interface{}, error) {
 	var request Func1Request
-	fmt.Printf("%+v\n", r)
+	fmt.Printf("deceodeFundc1 %+v\n", r)
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
+	fmt.Printf("__ decoded %+v\n", request)
 	return request, nil
 }
 
@@ -56,8 +60,9 @@ func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface
 }
 
 
-func MakeFunc1Endpoint(svc TodoService) endpoint.Endpoint {
+func MakeFunc1Endpoint(svc TodoService, todoRepository repositories.TodoRepositoryImpl) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
+		todoRepository.GetAll()
 		req := request.(Func1Request)
 		v, err := svc.Func1(req.S)
 		if err != nil {
@@ -65,6 +70,12 @@ func MakeFunc1Endpoint(svc TodoService) endpoint.Endpoint {
 		}
 		return Func1Response{v, ""}, nil
 	}
+}
+
+func CreateService(/*rs routing.Service,*/ todoRepository repositories.TodoRepositoryImpl) TodoService {
+	return &TodoServiceImpl {
+		/*routingService: rs,*/
+		todoRepository }
 }
 
 
