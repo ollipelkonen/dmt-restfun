@@ -1,10 +1,14 @@
 package repositories
 
+/*
+	this package contains code to for Todo MySQL repository
+*/
+
 import (
 	"fmt"
 	"time"
 	_ "github.com/go-sql-driver/mysql"
-	//"encoding/json"
+	_ "encoding/json"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -26,13 +30,12 @@ type TodoRepository interface {
 }
 
 type TodoRepositoryImpl struct {
-	//db	*sql.DB
 	db	*sqlx.DB
 }
 
 func (repo *TodoRepositoryImpl) init(connectString string) {
 	fmt.Println("connecting " + connectString);
-	repo.db = sqlx.MustConnect("mysql", connectString + "?parseTime=true")
+	repo.db = sqlx.MustConnect("mysql", connectString)
 	//defer db.Close()
 }
 

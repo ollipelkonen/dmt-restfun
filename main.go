@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"github.com/ollipelkonen/dmt-restfun/services"
 	"github.com/ollipelkonen/dmt-restfun/repositories"
+	"github.com/ollipelkonen/dmt-restfun/config"
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
@@ -12,11 +13,20 @@ import (
 func main() {
 	svc := services.TodoServiceImpl{}
 
-	fmt.Println("database connection")
-	rep := repositories.CreateRepository("restfun:restfun@/restfun")
+	config := config.LoadConfig("settings.json")
+
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		config.Database.Username,
+		config.Database.Password,
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.Database)
+
+	rep := repositories.CreateRepository(connectionString)
+
 	rep.GetAll()
 
-	fmt.Println("server")
+	fmt.Println("running")
 	funcHandler := httptransport.NewServer(
 		services.MakeFunc1Endpoint(svc),
 		services.DecodeFunc1Request,
@@ -25,5 +35,5 @@ func main() {
 
 	http.Handle("/todo/", funcHandler)
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":"+config.Port, nil)
 }
