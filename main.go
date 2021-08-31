@@ -7,8 +7,6 @@ import (
 	"github.com/ollipelkonen/dmt-restfun/services"
 	"github.com/ollipelkonen/dmt-restfun/repositories"
 	"github.com/ollipelkonen/dmt-restfun/config"
-	//"github.com/go-kit/kit/endpoint"
-	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 )
 
@@ -28,8 +26,6 @@ func authMiddleware(token string) mux.MiddlewareFunc {
 
 
 func main() {
-	svc := services.TodoServiceImpl{}
-
 	config := config.LoadConfig("settings.json")
 
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
@@ -40,17 +36,21 @@ func main() {
 		config.Database.Database)
 
 	todoRepository := repositories.CreateRepository(connectionString)
+	svc := services.CreateService(todoRepository)
 
-	fmt.Println("running")
-	funcHandler := httptransport.NewServer(
-		(services.MakeFunc1Endpoint(svc, todoRepository)),
-		services.DecodeFunc1Request,
+	fmt.Println("____ running")
+	/*funcHandler := httptransport.NewServer(
+		services.MakeFunc1Endpoint(svc, todoRepository),
+		httptransport.NopRequestDecoder,
 		services.EncodeResponse,
-	)
+	)*/
 
 	r := mux.NewRouter()
-	r.Handle("/todo", funcHandler).Methods("GET")
-	r.Use(authMiddleware(config.Token));
 
+	r.Handle("/todo", svc.CreateGetAllHandler()).Methods("GET")
+
+	r.Handle("/todo/{id}", svc.CreateGetByIdHandler()).Methods("GET");
+
+	r.Use(authMiddleware(config.Token));
 	http.ListenAndServe(":"+config.Port, r)
 }

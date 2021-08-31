@@ -45,15 +45,13 @@ func (repo *TodoRepositoryImpl) GetAll() ([]Todo, error) {
 	if err != nil {
 		fmt.Printf("!! error: %+v\n", err)
 	}
-	/*fmt.Printf("%+v\n", result)
-	j, _ := json.Marshal(result)
-  fmt.Println(string(j))*/
 	return result, err
 }
 
 func (repo *TodoRepositoryImpl) GetById(id string) (Todo, error) {
 	todo := Todo{}
-	err := repo.db.Get(todo, "SELECT * FROM todo WHERE Id=?", id)
+	err := repo.db.Get(&todo, "SELECT * FROM todo WHERE id = ?", id)
+	fmt.Println("Get By ID " + id, todo)
 	return todo, err
 }
 
