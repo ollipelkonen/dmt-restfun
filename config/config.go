@@ -5,21 +5,21 @@ package config
 */
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
 // struct to hold configurations
 type Config struct {
-	Port 		string `json:"port"`
-	Token 	string `json:"token"`
+	Port     string `json:"port"`
+	Token    string `json:"token"`
 	Database struct {
-			Host     string `json:"host"`
-			Port 		 string `json:"port"`
-			Database string `json:"database"`
-			Username string `json:"username"`
-			Password string `json:"password"`
+		Host     string `json:"host"`
+		Port     string `json:"port"`
+		Database string `json:"database"`
+		Username string `json:"username"`
+		Password string `json:"password"`
 	} `json:"database"`
 }
 
@@ -27,7 +27,7 @@ type Config struct {
 func LoadConfig(filename string) Config {
 	configFile, err := os.ReadFile(filename)
 	if err != nil {
-		fmt.Printf("Missing config file '%s'\n", filename);
+		fmt.Printf("Missing config file '%s'\n", filename)
 		os.Exit(1)
 	}
 	if err != nil {
