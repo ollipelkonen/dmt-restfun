@@ -1,8 +1,7 @@
 
--- 1
+<h1> About </h1>
 
 this application uses <b>go-kit</b>
-
 
 you may have to install these manually<br/>
 
@@ -14,9 +13,7 @@ go get "github.com/jmoiron/sqlx"<br/>
 go get "github.com/gorilla/mux"<br/>
 
 
-All configurations are in <i>settings.json</i>
-
--- 2
+<h1>Database</h1>
 
 To initialize default test database<br/>
 
@@ -39,14 +36,17 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON restfun.* TO 'restfun'@'localhost';
 </pre>
 
 
--- 3
+<h1>Run</h1>
+
+All configurations are in <i>settings.json</i>
+
+Run:</br>
+go run main.go</br>
 
 Timeformat is RFC 3339 (2021-01-26T20:10:59Z)<br/>
 
 
--- 4
-
-test<br/>
+<h1>Test</h1>
 
 Use included Postman-json, or try with curl: <br/>
 
