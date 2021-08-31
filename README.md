@@ -37,9 +37,16 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON restfun.* TO 'restfun'@'localhost';
 
 -- 3
 
-the application doesn't have any sanity checks for input values
-
-curl -L -X POST -d '{"dueDate":"2020-01-01 01:11:11", "name":"task!", "description":"testing todo list"}' --header "Authorization: Bearer 1234"  localhost:8080/todo
+Timeformat is RFC 3339 (2021-01-26T20:10:59Z)
 
 
-curl -L -X POST -d '{"priority":3, "name":"task!", "description":"testing todo list"}' --header "Authorization: Bearer 1234"  localhost:8080/todo
+-- 4
+
+test
+
+curl -X GET --header "Authorization: Bearer 1234" localhost:8080/todo
+curl -X POST -d '{"priority":11, "name":"task!", "description":"testing todo list"}' --header "Authorization: Bearer 1234" localhost:8080/todo
+
+curl -X PUT -d '{"dueDate":"0001-01-01T00:00:00Z", "name":"task!", "description":"updated"}' --header "Authorization: Bearer 1234"  localhost:8080/todo/15
+
+curl -X POST -d '{"priority":3, "name":"task!", "description":"testing todo list"}' --header "Authorization: Bearer 1234"  localhost:8080/todo

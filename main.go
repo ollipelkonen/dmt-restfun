@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	//"context"
 	"github.com/ollipelkonen/dmt-restfun/services"
 	"github.com/ollipelkonen/dmt-restfun/repositories"
 	"github.com/ollipelkonen/dmt-restfun/config"
@@ -18,7 +17,6 @@ func authMiddleware(token string) mux.MiddlewareFunc {
 				if r.Header["Authorization"][0] == ("Bearer " + token) {
 					next.ServeHTTP(w, r)
 				}
-				//TODO: else show error
 			}
 		})
 	}
@@ -36,21 +34,17 @@ func main() {
 		config.Database.Database)
 
 	todoRepository := repositories.CreateRepository(connectionString)
-	svc := services.CreateService(todoRepository)
+	todoService := services.CreateService(todoRepository)
 
-	fmt.Println("____ running")
-	/*funcHandler := httptransport.NewServer(
-		services.MakeFunc1Endpoint(svc, todoRepository),
-		httptransport.NopRequestDecoder,
-		services.EncodeResponse,
-	)*/
+	fmt.Printf("____ listening to port %s\n", config.Port)
 
 	r := mux.NewRouter()
 
-	r.Handle("/todo", svc.CreateGetAllHandler()).Methods("GET")
-	r.Handle("/todo/{id}", svc.CreateGetByIdHandler()).Methods("GET");
-	r.Handle("/todo", svc.CreateInsertHandler()).Methods("POST")
-	r.Handle("/todo/{id}", svc.CreateUpdateHandler()).Methods("PUT")
+	r.Handle("/todo", todoService.CreateGetAllEndpoint()).Methods("GET")
+	r.Handle("/todo/{id}", todoService.CreateGetByIdEndpoint()).Methods("GET");
+	r.Handle("/todo", todoService.CreateInsertEndpoint()).Methods("POST")
+	r.Handle("/todo/{id}", todoService.CreateUpdateEndpoint()).Methods("PUT")
+	r.Handle("/todo/{id}", todoService.CreateDeleteEndpoint()).Methods("DELETE")
 
 	r.Use(authMiddleware(config.Token));
 	http.ListenAndServe(":"+config.Port, r)
