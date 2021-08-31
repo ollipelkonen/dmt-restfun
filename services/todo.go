@@ -1,6 +1,7 @@
 package services
 
 import (
+	"io"
 	"fmt"
 	"context"
 	"encoding/json"
@@ -20,17 +21,22 @@ type TodoService interface {
 	//GetAllHandler() *httptransport.Server
 	CreateGetAllHandler() *httptransport.Server
 	CreateGetByIdHandler() *httptransport.Server
+	CreateInsertHandler() *httptransport.Server
 	GetAll() ([]repositories.Todo, error)
 	GetById(id string) (repositories.Todo, error)
+	Post(map[string]string) (repositories.Todo, error)
 	Func1(string) (string, error)
 	Count(string) int
 }
-
 
 type TodoServiceImpl struct {
 	todoRepository repositories.TodoRepositoryImpl
 }
 
+type JsonMapInterface struct {
+	id string
+	data map[string]string
+}
 
 func (s TodoServiceImpl) CreateGetAllHandler() *httptransport.Server {
 	handler := httptransport.NewServer(
@@ -51,6 +57,19 @@ func (s TodoServiceImpl) CreateGetByIdHandler() *httptransport.Server {
 			return v, err
 		},
 		DecodePathId,
+		EncodeResponse,
+	)
+	return handler
+}
+
+func (s TodoServiceImpl) CreateInsertHandler() *httptransport.Server {
+	handler := httptransport.NewServer(
+		func(_ context.Context, request interface{}) (interface{}, error) {
+			fmt.Println("__ insert ", request)
+			v, err := s.Post( request.(JsonMapInterface).data );
+			return v, err
+		},
+		DecodeRequest,
 		EncodeResponse,
 	)
 	return handler
@@ -79,7 +98,11 @@ func (s TodoServiceImpl) GetById(id string) (repositories.Todo, error) {
 	return d, nil
 }
 
-
+func (s TodoServiceImpl) Post(data map[string]string) (repositories.Todo, error) {
+	//TOO:
+	s.todoRepository.Insert( data )
+	return repositories.Todo{}, nil
+}
 
 type EmptyRequest struct {
 }
@@ -101,6 +124,21 @@ type Func1Response struct {
 func DecodePathId(_ context.Context, r *http.Request) (interface{}, error) {
 	params := mux.Vars(r)
 	return PathIdRequest{params["id"]}, nil
+}
+
+// decode post body from json to map[string]string, get {id} from path if applicable
+func DecodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var v JsonMapInterface
+	params := mux.Vars(r)
+	v.id = params["id"]
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(data, &v.data); err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
 func DecodeFunc1Request(_ context.Context, r *http.Request) (interface{}, error) {

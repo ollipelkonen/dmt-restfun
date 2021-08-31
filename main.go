@@ -48,8 +48,8 @@ func main() {
 	r := mux.NewRouter()
 
 	r.Handle("/todo", svc.CreateGetAllHandler()).Methods("GET")
-
 	r.Handle("/todo/{id}", svc.CreateGetByIdHandler()).Methods("GET");
+	r.Handle("/todo", svc.CreateInsertHandler()).Methods("POST")
 
 	r.Use(authMiddleware(config.Token));
 	http.ListenAndServe(":"+config.Port, r)
