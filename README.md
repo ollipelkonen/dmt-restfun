@@ -28,6 +28,7 @@ CREATE USER 'restfun'@'localhost' IDENTIFIED BY 'restfun';
 GRANT SELECT, INSERT, UPDATE, DELETE ON restfun.* TO 'restfun'@'localhost';
 </pre>
 
+Don't worry, if table doesn't exist, the application tries to create it (database and user must exist)
 
 <h1>Run</h1>
 

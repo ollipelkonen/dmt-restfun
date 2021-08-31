@@ -14,6 +14,17 @@ import (
 	"time"
 )
 
+var todoSchema = `
+CREATE TABLE IF NOT EXISTS todo (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT DEFAULT "",
+  priority INT DEFAULT 1,
+  duedate TIMESTAMP DEFAULT 0,
+  completed TINYINT(1) DEFAULT 0,
+  completiondate TIMESTAMP DEFAULT 0
+);`
+
 // database model
 type Todo struct {
 	Id             int
@@ -32,15 +43,18 @@ type TodoRepository interface {
 	DeleteById(id string) (string, error)
 	Insert(map[string]interface{}) (string, error)
 	Update(id string, data map[string]interface{}) (string, error)
+	createDatabaseIfNotExists()
 }
 
 type TodoRepositoryImpl struct {
 	db *sqlx.DB
 }
 
+// initialize repository and connect to database
 func CreateRepository(connectString string) TodoRepositoryImpl {
 	rep := TodoRepositoryImpl{}
 	rep.connect(connectString)
+	rep.createDatabaseIfNotExists()
 	return rep
 }
 
@@ -49,6 +63,18 @@ func (repo *TodoRepositoryImpl) connect(connectString string) {
 	fmt.Println("connecting " + connectString)
 	repo.db = sqlx.MustConnect("mysql", connectString)
 	//defer repo.db.Close()
+}
+
+func (repo *TodoRepositoryImpl) createDatabaseIfNotExists() {
+	var id int
+	err := repo.db.Get(&id, "SELECT count(*) FROM todo")
+	if err != nil {
+		if _, err := repo.db.Exec(todoSchema); err != nil {
+			panic(fmt.Sprintf("Todo not found - unable to create\n %s", err))
+		} else {
+			fmt.Println("Table created")
+		}
+	}
 }
 
 // helper function: try to populate struct Todo with values in map

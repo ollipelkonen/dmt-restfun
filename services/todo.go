@@ -1,5 +1,9 @@
 package services
 
+/*
+	This package contains service fot Todo-list
+*/
+
 import (
 	"context"
 	"encoding/json"
@@ -23,6 +27,7 @@ type TodoServiceImpl struct {
 	todoRepository repositories.TodoRepositoryImpl
 }
 
+// requests and replies
 type JsonMapInterface struct {
 	id   string
 	data map[string]interface{}
@@ -35,6 +40,15 @@ type PathIdRequest struct {
 	Id string
 }
 
+// create new instance of the service
+func CreateService(todoRepository repositories.TodoRepositoryImpl) TodoService {
+	impl := &TodoServiceImpl{
+		todoRepository,
+	}
+	return impl
+}
+
+// functions to create endpoints for each function
 func (s TodoServiceImpl) CreateGetAllEndpoint() *httptransport.Server {
 	handler := httptransport.NewServer(
 		func(_ context.Context, request interface{}) (interface{}, error) {
@@ -111,13 +125,7 @@ func DecodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	return v, nil
 }
 
+// encode response body to json
 func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
-}
-
-func CreateService( todoRepository repositories.TodoRepositoryImpl) TodoService {
-	impl := &TodoServiceImpl{
-		todoRepository,
-	}
-	return impl
 }
