@@ -30,7 +30,7 @@ type TodoRepository interface {
 	GetAll() ([]Todo, error)
 	GetById(id string) (Todo, error)
 	DeleteById(id string) (string, error)
-	Insert(map[string]string) (int, error)
+	Insert(map[string]interface{}) (int, error)
 	Update(id, data Todo) (string, error)
 }
 
@@ -67,42 +67,39 @@ func (repo *TodoRepositoryImpl) DeleteById(id string) (string, error) {
 
 
 // try to populate struct Todo with values in map
-func MapToTodo(dict map[string]string) (Todo) {
+func MapToTodo(dict map[string]interface{}) (Todo) {
 	todo := &Todo{}
 	t := reflect.ValueOf(todo).Elem()
 	for k, v := range dict {
 		fname := strings.Title(k)
 		f := t.FieldByName(fname)
-		if f.CanSet() && f.Type() == reflect.TypeOf("string") {
-			newValue := reflect.ValueOf(v)
-			t.FieldByName(fname).Set( newValue )
+		fmt.Println("____ test ", fname, f.Type())
+		if f.CanSet() {
+			val := reflect.ValueOf(v)
+			fmt.Println("__ i set ", fname, val)
+			f.Set(val.Convert(f.Type()))
+		} else {
+			fmt.Println("__ not set ", fname, )
 		}
 	}
 	return *todo;
 }
 
 
-func (repo *TodoRepositoryImpl) Insert(data map[string]string) (int, error) {
-	fields := []string{ "Name", "Description", "Priority", "DueDate", "Complated", "CompletionDate" }
+func (repo *TodoRepositoryImpl) Insert(data map[string]interface{}) (int, error) {
+	fields := []string{ "Name", "Description", "Priority", "tete", "Complated", "CompletionDate" }
 	_ = fields
 	keys := []string{};
-	values := []string{};
 	x := []string{}
-	for k, v := range data {
+	for k, _ := range data {
 		keys = append(keys, k)
-		values = append(values, v)
 		x = append(x, ":"+k)
 	}
 	query := "INSERT INTO todo (" + strings.Join(keys,",") + ") VALUES (" + strings.Join(x,",") + ")";
-	fmt.Println("___ query: ", query)
-	_, err := repo.db.NamedExec(query, MapToTodo(data));
+	values := MapToTodo(data)
+	fmt.Println("___ query: ", query, values)
+	_, err := repo.db.NamedExec(query, values);
 	return 0, err
-/*	k, err := repo.db.NamedExec(`INSERT INTO person (Name, Description, Priority, DueDate, Completed, CompletionDate)
-		VALUES (:Name, :Description, :Priority, :DueDate, :Completed, :CompletionDate)`, data)
-	//return d.LastInsertId(), err
-	fmt.Println("__ insert? ", k, err)*/
-	//return 1, err
-//	return 1, nil
 }
 
 func (repo *TodoRepositoryImpl) Update(id, data Todo) (string, error) {

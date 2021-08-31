@@ -10,7 +10,6 @@ import (
 
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/ollipelkonen/dmt-restfun/repositories"
-	"github.com/go-kit/kit/endpoint"
 	"github.com/gorilla/mux"
 
 )
@@ -24,8 +23,7 @@ type TodoService interface {
 	CreateInsertHandler() *httptransport.Server
 	GetAll() ([]repositories.Todo, error)
 	GetById(id string) (repositories.Todo, error)
-	Post(map[string]string) (repositories.Todo, error)
-	Func1(string) (string, error)
+	Post(map[string]interface{}) (repositories.Todo, error)
 	Count(string) int
 }
 
@@ -35,7 +33,7 @@ type TodoServiceImpl struct {
 
 type JsonMapInterface struct {
 	id string
-	data map[string]string
+	data map[string]interface{}
 }
 
 func (s TodoServiceImpl) CreateGetAllHandler() *httptransport.Server {
@@ -81,14 +79,6 @@ func (s TodoServiceImpl) GetAll() ([]repositories.Todo, error) {
 	return d, nil
 }
 
-func (s TodoServiceImpl) Func1(string) (string, error) {
-	fmt.Println("___ 1")
-	d, _ := s.todoRepository.GetAll()
-	fmt.Println("___ d: ", d)
-	j, _ := json.Marshal(d)
-	return string(j), nil;
-}
-
 func (TodoServiceImpl) Count(s string) int {
 	return len(s)
 }
@@ -98,7 +88,7 @@ func (s TodoServiceImpl) GetById(id string) (repositories.Todo, error) {
 	return d, nil
 }
 
-func (s TodoServiceImpl) Post(data map[string]string) (repositories.Todo, error) {
+func (s TodoServiceImpl) Post(data map[string]interface{}) (repositories.Todo, error) {
 	//TOO:
 	s.todoRepository.Insert( data )
 	return repositories.Todo{}, nil
@@ -111,22 +101,13 @@ type PathIdRequest struct {
 	Id string
 }
 
-type Func1Request struct {
-	S string `json:"s"`
-}
-
-type Func1Response struct {
-	V   string `json:"v"`
-	Err string `json:"err,omitempty"`
-}
-
 
 func DecodePathId(_ context.Context, r *http.Request) (interface{}, error) {
 	params := mux.Vars(r)
 	return PathIdRequest{params["id"]}, nil
 }
 
-// decode post body from json to map[string]string, get {id} from path if applicable
+// decode post body from json to map[string]interface{}, get {id} from path if applicable
 func DecodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var v JsonMapInterface
 	params := mux.Vars(r)
@@ -141,38 +122,12 @@ func DecodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	return v, nil
 }
 
-func DecodeFunc1Request(_ context.Context, r *http.Request) (interface{}, error) {
-	var request Func1Request
-	fmt.Printf("____ decode %+v\n", r)
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		fmt.Printf("__ decode error %+v\n", err)
-		return nil, err
-	}
-	fmt.Printf("__ decoded %+v\n", request)
-	return request, nil
-}
-
 
 func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
 }
 
 
-func MakeFunc1Endpoint(svc TodoService, todoRepository repositories.TodoRepositoryImpl) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
-		//todoRepository.GetAll()
-		fmt.Println("??")
-		v, err := svc.GetAll()
-		return v, err
-		/*req := request.(Func1Request)
-		v, err := svc.Func1(req.S)
-		if err != nil {
-			return Func1Response{v, err.Error()}, nil
-		}
-		return Func1Response{v, ""}, nil*/
-		//return svc.GetAll(), nil
-	}
-}
 
 func CreateService(/*rs routing.Service,*/ todoRepository repositories.TodoRepositoryImpl) TodoService {
 	impl := &TodoServiceImpl {
