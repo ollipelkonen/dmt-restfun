@@ -27,7 +27,7 @@ type Todo struct {
 
 
 type TodoRepository interface {
-	init(string)
+	connect(string)
 	GetAll() ([]Todo, error)
 	GetById(id string) (Todo, error)
 	DeleteById(id string) (string, error)
@@ -42,13 +42,13 @@ type TodoRepositoryImpl struct {
 
 func CreateRepository(connectString string) TodoRepositoryImpl {
   rep := TodoRepositoryImpl{}
-  rep.init(connectString)
+  rep.connect(connectString)
   return rep
 }
 
 
 // create database connection
-func (repo *TodoRepositoryImpl) init(connectString string) {
+func (repo *TodoRepositoryImpl) connect(connectString string) {
   fmt.Println("connecting " + connectString);
   repo.db = sqlx.MustConnect("mysql", connectString)
   //defer repo.db.Close()
