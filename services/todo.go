@@ -1,17 +1,15 @@
 package services
 
 import (
-	"io"
-	_ "fmt"
 	"context"
 	"encoding/json"
-	"net/http"
+	_ "fmt"
 	httptransport "github.com/go-kit/kit/transport/http"
-	"github.com/ollipelkonen/dmt-restfun/repositories"
 	"github.com/gorilla/mux"
-
+	"github.com/ollipelkonen/dmt-restfun/repositories"
+	"io"
+	"net/http"
 )
-
 
 type TodoService interface {
 	CreateGetAllEndpoint() *httptransport.Server
@@ -25,9 +23,8 @@ type TodoServiceImpl struct {
 	todoRepository repositories.TodoRepositoryImpl
 }
 
-
 type JsonMapInterface struct {
-	id string
+	id   string
 	data map[string]interface{}
 }
 
@@ -37,8 +34,6 @@ type EmptyRequest struct {
 type PathIdRequest struct {
 	Id string
 }
-
-
 
 func (s TodoServiceImpl) CreateGetAllEndpoint() *httptransport.Server {
 	handler := httptransport.NewServer(
@@ -65,7 +60,7 @@ func (s TodoServiceImpl) CreateGetByIdEndpoint() *httptransport.Server {
 func (s TodoServiceImpl) CreateInsertEndpoint() *httptransport.Server {
 	handler := httptransport.NewServer(
 		func(_ context.Context, request interface{}) (interface{}, error) {
-			return s.todoRepository.Insert( request.(JsonMapInterface).data );
+			return s.todoRepository.Insert(request.(JsonMapInterface).data)
 		},
 		DecodeRequest,
 		EncodeResponse,
@@ -76,7 +71,7 @@ func (s TodoServiceImpl) CreateInsertEndpoint() *httptransport.Server {
 func (s TodoServiceImpl) CreateUpdateEndpoint() *httptransport.Server {
 	handler := httptransport.NewServer(
 		func(_ context.Context, request interface{}) (interface{}, error) {
-			return s.todoRepository.Update( request.(JsonMapInterface).id, request.(JsonMapInterface).data )
+			return s.todoRepository.Update(request.(JsonMapInterface).id, request.(JsonMapInterface).data)
 		},
 		DecodeRequest,
 		EncodeResponse,
@@ -87,16 +82,13 @@ func (s TodoServiceImpl) CreateUpdateEndpoint() *httptransport.Server {
 func (s TodoServiceImpl) CreateDeleteEndpoint() *httptransport.Server {
 	handler := httptransport.NewServer(
 		func(_ context.Context, request interface{}) (interface{}, error) {
-			return s.todoRepository.DeleteById( request.(PathIdRequest).Id )
+			return s.todoRepository.DeleteById(request.(PathIdRequest).Id)
 		},
 		DecodePathId,
 		EncodeResponse,
 	)
 	return handler
 }
-
-
-
 
 // get {id} from path if applicable
 func DecodePathId(_ context.Context, r *http.Request) (interface{}, error) {
@@ -119,18 +111,13 @@ func DecodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	return v, nil
 }
 
-
 func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	return json.NewEncoder(w).Encode(response)
 }
 
-func CreateService(/*rs routing.Service,*/ todoRepository repositories.TodoRepositoryImpl) TodoService {
-	impl := &TodoServiceImpl {
-		/*routingService: rs,*/
+func CreateService( todoRepository repositories.TodoRepositoryImpl) TodoService {
+	impl := &TodoServiceImpl{
 		todoRepository,
-	 }
-	 return impl
+	}
+	return impl
 }
-
-
-
