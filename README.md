@@ -57,7 +57,9 @@ Use included Postman-json, or try with curl: <br/>
 
 <pre>curl -X GET --header "Authorization: Bearer fbf566e0bd1747409502db0f" localhost:8080/todo</pre>
 <pre>curl -X POST -d '{"priority":11, "name":"task!", "description":"testing todo list"}' --header "Authorization: Bearer fbf566e0bd1747409502db0f" localhost:8080/todo</pre>
-<pre>curl -X PUT -d '{"dueDate":"0001-01-01T00:00:00Z", "name":"task!", "description":"updated"}' --header "Authorization: Bearer fbf566e0bd1747409502db0f"  localhost:8080/todo/1</pre>
-<pre>curl -X POST -d '{ "name":"task!",  "priority":3, "description":"Remember to test TODO-list", "duedate":"2022-01-20T16:00:00Z"  }' --header "Authorization: Bearer fbf566e0bd1747409502db0f"  localhost:8080/todo</pre>
+<pre>curl -X PUT -d '{"dueDate":"0001-01-01T00:00:00Z", "name":"task!", "description":"updated"}' --header "Authorization: Bearer fbf566e0bd1747409502db0f" localhost:8080/todo/1</pre>
+<pre>curl -X POST -d '{"name":"task!", "priority":3, "description":"Remember to test TODO-list", "duedate":"2022-01-20T16:00:00Z"}' --header "Authorization: Bearer fbf566e0bd1747409502db0f" localhost:8080/todo</pre>
+<pre>curl -X GET --header "Authorization: Bearer fbf566e0bd1747409502db0f" localhost:8080/todo/1</pre>
+<pre>curl -X DELETE --header "Authorization: Bearer fbf566e0bd1747409502db0f" localhost:8080/todo/1</pre>
 
 etc
