@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"time"
 	"strings"
+	"strconv"
 	"reflect"
 	_ "github.com/go-sql-driver/mysql"
 	_ "encoding/json"
 	"github.com/jmoiron/sqlx"
 )
 
+// database model
 type Todo struct {
   Id int
   Name string
@@ -30,19 +32,49 @@ type TodoRepository interface {
 	GetAll() ([]Todo, error)
 	GetById(id string) (Todo, error)
 	DeleteById(id string) (string, error)
-	Insert(map[string]interface{}) (int, error)
-	Update(id, data Todo) (string, error)
+	Insert(map[string]interface{}) (string, error)
+	Update(id string, data map[string]interface{}) (string, error)
 }
 
 type TodoRepositoryImpl struct {
 	db	*sqlx.DB
 }
 
+// create database connection
 func (repo *TodoRepositoryImpl) init(connectString string) {
 	fmt.Println("connecting " + connectString);
 	repo.db = sqlx.MustConnect("mysql", connectString)
-	//defer db.Close()
+	//defer repo.db.Close()
 }
+
+
+// helper function: try to populate struct Todo with values in map
+func MapToTodo(dict map[string]interface{}) (Todo) {
+	todo := &Todo{}
+	t := reflect.ValueOf(todo).Elem()
+	for k, v := range dict {
+		fname := strings.Title(k)
+		f := t.FieldByName(fname)
+		if f.CanSet() {
+			val := reflect.ValueOf(v)
+			f.Set(val.Convert(f.Type()))
+		} else {
+		}
+	}
+	return *todo;
+}
+
+// helper function: return keys in two arrays for sql query, one with names and one with :name
+func parseMapForQuery(data map[string]interface{}) ([]string, []string) {
+	keys := []string{};
+	x := []string{}
+	for k, _ := range data {
+		keys = append(keys, k)
+		x = append(x, ":"+k)
+	}
+	return keys, x
+}
+
 
 func (repo *TodoRepositoryImpl) GetAll() ([]Todo, error) {
 	result := []Todo{}
@@ -62,53 +94,30 @@ func (repo *TodoRepositoryImpl) GetById(id string) (Todo, error) {
 
 func (repo *TodoRepositoryImpl) DeleteById(id string) (string, error) {
 	_, err := repo.db.Query("DELETE FROM todo WHERE id = ?", id)
-	return "", err
+	return "ok", err
 }
 
-
-// try to populate struct Todo with values in map
-func MapToTodo(dict map[string]interface{}) (Todo) {
-	todo := &Todo{}
-	t := reflect.ValueOf(todo).Elem()
-	for k, v := range dict {
-		fname := strings.Title(k)
-		f := t.FieldByName(fname)
-		fmt.Println("____ test ", fname, f.Type())
-		if f.CanSet() {
-			val := reflect.ValueOf(v)
-			fmt.Println("__ i set ", fname, val)
-			f.Set(val.Convert(f.Type()))
-		} else {
-			fmt.Println("__ not set ", fname, )
-		}
-	}
-	return *todo;
-}
-
-
-func (repo *TodoRepositoryImpl) Insert(data map[string]interface{}) (int, error) {
-	fields := []string{ "Name", "Description", "Priority", "tete", "Complated", "CompletionDate" }
-	_ = fields
-	keys := []string{};
-	x := []string{}
-	for k, _ := range data {
-		keys = append(keys, k)
-		x = append(x, ":"+k)
-	}
+func (repo *TodoRepositoryImpl) Insert(data map[string]interface{}) (string, error) {
+	keys, x := parseMapForQuery(data);
 	query := "INSERT INTO todo (" + strings.Join(keys,",") + ") VALUES (" + strings.Join(x,",") + ")";
 	values := MapToTodo(data)
 	fmt.Println("___ query: ", query, values)
 	_, err := repo.db.NamedExec(query, values);
-	return 0, err
+	return "ok", err
 }
 
-func (repo *TodoRepositoryImpl) Update(id, data Todo) (string, error) {
-	//d, err := repo.db.NamedExec(`UPDATE person SET Name=, Description, Priority, DueDate, Completed, CompletionDate)
-	//	VALUES (:Name, :Description, :Priority, :DueDate, :Completed, :CompletionDate)`, personStructs)
-	//return d, err
-	//TODO: find out which parameters exist
-	fmt.Println("____ update ", data);
-	return "ok", nil
+func (repo *TodoRepositoryImpl) Update(id string, data map[string]interface{}) (string, error) {
+	// create list of "name=:name, desc=:desc..." for qyery
+	keys, x := parseMapForQuery(data);
+	vals := []string{};
+	for k,v := range keys {
+		vals = append( vals, v + "=" + x[k] );
+	}
+	query := "UPDATE todo SET " + strings.Join(vals,",") + " WHERE id=:id";
+	values := MapToTodo(data)
+	values.Id, _ = strconv.Atoi(id)
+	_, err := repo.db.NamedExec(query, values);
+	return "ok", err
 }
 
 

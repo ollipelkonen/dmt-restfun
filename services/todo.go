@@ -21,6 +21,7 @@ type TodoService interface {
 	CreateGetAllHandler() *httptransport.Server
 	CreateGetByIdHandler() *httptransport.Server
 	CreateInsertHandler() *httptransport.Server
+	CreateUpdateHandler() *httptransport.Server
 	GetAll() ([]repositories.Todo, error)
 	GetById(id string) (repositories.Todo, error)
 	Post(map[string]interface{}) (repositories.Todo, error)
@@ -66,6 +67,18 @@ func (s TodoServiceImpl) CreateInsertHandler() *httptransport.Server {
 			fmt.Println("__ insert ", request)
 			v, err := s.Post( request.(JsonMapInterface).data );
 			return v, err
+		},
+		DecodeRequest,
+		EncodeResponse,
+	)
+	return handler
+}
+
+func (s TodoServiceImpl) CreateUpdateHandler() *httptransport.Server {
+	handler := httptransport.NewServer(
+		func(_ context.Context, request interface{}) (interface{}, error) {
+			fmt.Println("__ update ", request)
+			return s.todoRepository.Update( request.(JsonMapInterface).id, request.(JsonMapInterface).data )
 		},
 		DecodeRequest,
 		EncodeResponse,

@@ -50,6 +50,7 @@ func main() {
 	r.Handle("/todo", svc.CreateGetAllHandler()).Methods("GET")
 	r.Handle("/todo/{id}", svc.CreateGetByIdHandler()).Methods("GET");
 	r.Handle("/todo", svc.CreateInsertHandler()).Methods("POST")
+	r.Handle("/todo/{id}", svc.CreateUpdateHandler()).Methods("PUT")
 
 	r.Use(authMiddleware(config.Token));
 	http.ListenAndServe(":"+config.Port, r)
